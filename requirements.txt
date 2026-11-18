@@ -1,0 +1,9 @@
+streamlit
+pandas
+openpyxl
+requests
+huggingface_hub
+langchain-core
+langchain-community
+--extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+llama-cpp-python
