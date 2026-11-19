@@ -10,6 +10,14 @@ st.set_page_config(page_title="Bank Alerts Analyzer", page_icon="💳", layout="
 
 
 # ---------------------------------------------------------------- optional password gate
+
+@st.cache_resource
+def get_poller():
+    core.restore_backup()
+    return service.Poller(interval_minutes=1)
+
+
+poller = get_poller()
 def gate():
     pw = os.environ.get("APP_PASSWORD", "")
     if not pw or st.session_state.get("authed"):
@@ -26,8 +34,8 @@ gate()
 
 @st.cache_resource
 def get_poller():
-    core.restore_backup()                # pull the saved sheet if this container started empty
-    return service.Poller(interval_minutes=5)
+    core.restore_backup()
+    return service.Poller(interval_minutes=1)
 
 
 poller = get_poller()
@@ -45,8 +53,26 @@ def mtime():
 
 # ---------------------------------------------------------------- sidebar
 st.sidebar.title("Mailbox")
-poller.enabled = st.sidebar.toggle("Auto-fetch new emails", value=poller.enabled)
-poller.interval = st.sidebar.number_input("Every (minutes)", 1, 120, int(poller.interval // 60)) * 60
+st.sidebar.subheader("Automatic Email Monitoring")
+
+poller.enabled = st.sidebar.toggle(
+    "Auto-fetch new emails",
+    value=True,
+    key="auto_fetch_emails"
+)
+
+poller.interval = st.sidebar.number_input(
+    "Check inbox every (minutes)",
+    min_value=1,
+    max_value=120,
+    value=1,
+    key="email_poll_interval"
+) * 60
+
+if poller.enabled:
+    st.sidebar.success("Automatic email monitoring is ON")
+else:
+    st.sidebar.warning("Automatic email monitoring is PAUSED")
 
 if st.sidebar.button("Fetch emails now", width='stretch'):
     with st.spinner("Reading mailbox and running the model (the first run loads the model)..."):
