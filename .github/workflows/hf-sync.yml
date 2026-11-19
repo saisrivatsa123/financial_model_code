@@ -1,0 +1,35 @@
+
+name: Sync GitHub to Hugging Face
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Sync files to HF Space
+        uses: huggingface/hub-sync@v0.3.0
+        with:
+          github_repo_id: ${{ github.repository }}
+          huggingface_repo_id: srivathsa96/TestSpace
+          repo_type: space
+          hf_token: ${{ secrets.HF_TOKEN }}
+          delete_removed: false
+          exclude: |
+            README.md
+            .env
+            token.json
+            credentials.json
+            .streamlit/secrets.toml
+            data/
+            models/
+            *.gguf
+            *.xlsx
+            *.pyc
+            __pycache__/
