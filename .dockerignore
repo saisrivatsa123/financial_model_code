@@ -1,0 +1,17 @@
+
+.git
+.gitignore
+.venv
+venv
+finance
+__pycache__
+*.pyc
+.DS_Store
+._*
+.env
+.env.*
+token.json
+credentials.json
+*.gguf
+data/*.xlsx
+data/mail_state.json
