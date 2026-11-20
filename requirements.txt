@@ -5,4 +5,4 @@ requests
 huggingface_hub
 langchain-core
 langchain-community
-
+llama-cpp-python
