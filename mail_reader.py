@@ -23,12 +23,15 @@ from datetime import datetime, timedelta
 from email import policy
 from email.message import EmailMessage
 from email.utils import parseaddr, parsedate_to_datetime
-
+from dotenv import load_dotenv
 import core   # also loads the .env file
+load_dotenv()
 
-IMAP_HOST = os.environ.get("IMAP_HOST", "imap.gmail.com")
-IMAP_USER = os.environ.get("IMAP_USER", "saisrivatsa143@gmail.com")
-IMAP_PASSWORD = os.environ.get("IMAP_PASSWORD", "qukpeqlkjufqyhhy")      # Gmail: use an App Password
+
+
+IMAP_HOST = os.environ.get("IMAP_HOST", "")
+IMAP_USER = os.environ.get("IMAP_USER", "")
+IMAP_PASSWORD = os.environ.get("IMAP_PASSWORD", "")      # Gmail: use an App Password
 IMAP_FOLDER = os.environ.get("IMAP_FOLDER", "INBOX")
 SENDERS = [s.strip().lower() for s in os.environ.get("ALLOWED_SENDERS", "hdfcbank,icicibank").split(",") if s.strip()]
 SINCE_DAYS = int(os.environ.get("SINCE_DAYS", "30"))      # never look further back than this
