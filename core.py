@@ -6,7 +6,8 @@ import threading
 from datetime import datetime
 from html.parser import HTMLParser
 from urllib.parse import urlparse
-
+from dotenv import load_dotenv
+load_dotenv()
 # ----------------------------------------------------------------------------
 # Settings (override with Space "Variables and secrets")
 # ----------------------------------------------------------------------------

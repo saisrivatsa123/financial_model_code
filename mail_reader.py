@@ -38,7 +38,7 @@ SINCE_DAYS = int(os.environ.get("SINCE_DAYS", "30"))      # never look further b
 FETCH_LIMIT = int(os.environ.get("FETCH_LIMIT", "50"))    # new emails per poll
 ONLY_UNSEEN = True
 MARK_SEEN = True
-ACK_EMAIL = os.environ.get("ACK_EMAIL", "1") == "1"
+ACK_EMAIL = os.environ.get("ACK_EMAIL", "0") == "1"
 ACK_MAX_PER_POLL = int(os.environ.get("ACK_MAX_PER_POLL", "10"))   # the rest are sent on the next poll
 
 
@@ -230,7 +230,8 @@ class MailBox:
 
     # ---- the method service.py calls (unchanged name and output)
     def unseen(self):
-        known = core.known_message_ids() | _load_state()["processed"]
+        import database
+        known = database.known_message_ids() | _load_state()["processed"]
         yield from self._scan(known)
 
     # ---- also available for the newer service.py, which passes its own known ids

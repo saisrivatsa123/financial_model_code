@@ -5,19 +5,13 @@ import streamlit as st
 
 import core
 import service
+import database
 
 st.set_page_config(page_title="Bank Alerts Analyzer", page_icon="💳", layout="wide")
 
 
 # ---------------------------------------------------------------- optional password gate
 
-@st.cache_resource
-def get_poller():
-    core.restore_backup()
-    return service.Poller(interval_minutes=1)
-
-
-poller = get_poller()
 def gate():
     pw = os.environ.get("APP_PASSWORD", "")
     if not pw or st.session_state.get("authed"):
@@ -34,7 +28,7 @@ gate()
 
 @st.cache_resource
 def get_poller():
-    core.restore_backup()
+    database.init_db()
     return service.Poller(interval_minutes=1)
 
 
@@ -42,13 +36,13 @@ poller = get_poller()
 
 
 @st.cache_data(ttl=5)
-def load(mtime):
-    return core.load_frames()
+def load():
+    return database.load_frames()
 
 
 def mtime():
     p = core.xlsx_path()
-    return os.path.getmtime(p) if os.path.exists(p) else 0
+    return 0
 
 
 # ---------------------------------------------------------------- sidebar
@@ -90,15 +84,22 @@ if st.sidebar.button("Reload data", width='stretch'):
     st.cache_data.clear()
     st.rerun()
 
-p = core.xlsx_path()
-if os.path.exists(p):
-    with open(p, "rb") as f:
-        st.sidebar.download_button("Download Excel", f.read(), file_name=os.path.basename(p),
-                                   width='stretch')
-    st.sidebar.caption("Storage here is temporary unless you enabled persistent storage or the dataset backup.")
+# Export current Neon data to an Excel workbook on demand.
+if st.sidebar.button("Prepare Excel export"):
+    from io import BytesIO
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        for name, frame in database.load_frames().items():
+            frame.to_excel(writer, sheet_name=name, index=False)
+    st.sidebar.download_button(
+        "Download Neon data as Excel",
+        data=output.getvalue(),
+        file_name="bank_messages_export.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 # ---------------------------------------------------------------- data
-frames = load(mtime())
+frames = load()
 tx = frames["transactions"].copy()
 bal = frames["balances"].copy()
 rev = frames["needs_review"].copy()
@@ -169,7 +170,7 @@ with tab_rev:
 # ---------------------------------------------------------------- manual test
 with tab_try:
     text = st.text_area("Paste an SMS or email text", height=120)
-    save = st.checkbox("Also save the result to the Excel file")
+    save = st.checkbox("Also save the result to Neon")
     if st.button("Extract") and text.strip():
         with st.spinner("Running the model..."):
             row = service.row_from_text(text, {"received_at": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
@@ -180,4 +181,4 @@ with tab_try:
         else:
             st.json(row)
             if save:
-                st.success(f"Saved: {core.append_rows([row])}")
+                st.success(f"Saved: {database.save_rows([row])}")

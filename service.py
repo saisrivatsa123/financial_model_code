@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 
 import core
+import database
 
 REQUIRE_AUTH = os.environ.get("REQUIRE_AUTH", "0") == "1"
 
@@ -65,7 +66,7 @@ def poll_once():
         "errors": []
     }
 
-    known = core.known_message_ids()
+    known = database.known_message_ids()
     rows = []
     uids = []
 
@@ -95,7 +96,7 @@ def poll_once():
                 )
 
         # Save extracted rows to Excel first.
-        counts = core.append_rows(rows)
+        counts = database.save_rows(rows)
         stats["saved"] = sum(counts.values())
 
         # Mark handled messages as read only after saving.
